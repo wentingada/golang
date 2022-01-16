@@ -1,5 +1,5 @@
 #在最新的golang docker 镜像中build
-FROM golang:latest AS builder
+FROM golang:1.17 AS builder
 #在容器内部创建一个目录来存储http应用，并设为工作目录
 WORKDIR /BUILD
 ENV GOPROXY=https://goproxy.cn,https://goproxy.io,direct \
