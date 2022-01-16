@@ -8,7 +8,7 @@ ENV GOPROXY=https://goproxy.cn,https://goproxy.io,direct \
 #复制程序到容器
 COPY . .
 #编译
-RUN GOOS=linux go build -installsuffix cgo -o httpserver main.go
+RUN go build -o httpserver 
 
 #在新的镜像里面执行部署
 FROM busybox AS executor
