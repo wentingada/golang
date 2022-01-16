@@ -11,7 +11,43 @@ use own dockerfile to:
   
 - 通过 docker 命令本地启动 httpserver
   - 后台运行
-  >docker run -d -p :3030 --name server-v0.0 httpserver:0.0
+  >docker run -d -p 8000:8000 --name server-v0.0 httpserver:0.0
   >>docker exec -it server-v0.0 /bin/sh
   - 交互运行
 - 通过 nsenter 进入容器查看 IP 配置
+    - 获取容器pid
+    >docker inspect server-v0.0 -f '{{.State.Pid}}'
+    >>23069
+    - 也可以通过ContainerID
+    >docker inspect [ContainerID] -f '{{.State.Pid}}'
+    >>23069
+    - 进入容器网络空间，执行nsenter命令
+    - nsenter -n -t[pid]
+    >ifconfig
+     >>eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        >>inet 172.17.0.5  netmask 255.255.0.0  broadcast 0.0.0.0
+        >>inet6 fe80::42:acff:fe11:5  prefixlen 64  scopeid 0x20<link>
+        >>ether 02:42:ac:11:00:05  txqueuelen 0  (Ethernet)
+        >>RX packets 3  bytes 222 (222.0 B)
+        >>RX errors 0  dropped 0  overruns 0  frame 0
+        >>TX packets 8  bytes 648 (648.0 B)
+        >>TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+    
+    >ip addr
+>>1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1
+    >>link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    >>inet 127.0.0.1/8 scope host lo
+       >>valid_lft forever preferred_lft forever
+    >>inet6 ::1/128 scope host 
+       >>valid_lft forever preferred_lft forever
+>>16: eth0@if17: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP 
+    >>link/ether 02:42:ac:11:00:05 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    >>inet 172.17.0.5/16 scope global eth0
+       >>valid_lft forever preferred_lft forever
+    >>inet6 fe80::42:acff:fe11:5/64 scope link 
+       >>valid_lft forever preferred_lft forever
+
+>ping www.baidu.com
+ >>PING www.a.shifen.com (180.101.49.12) 56(84) bytes of data.
+ >>64 bytes from 180.101.49.12 (180.101.49.12): icmp_seq=1 ttl=49 time=10.1 ms
+ >>64 bytes from 180.101.49.12 (180.101.49.12): icmp_seq=2 ttl=49 time=10.1 ms
