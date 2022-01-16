@@ -15,7 +15,7 @@ RUN GOPS=linux go build -installsuffix cgo -o httpserver main.go
 FROM busybox AS executor
 COPY --from=builder /go/src/httpserver/httpserver /httpserver
 
-WORKDIR /httpserver/
+WORKDIR /httpserver
 #暴露8080给主机
 EXPOSE 3030
 
