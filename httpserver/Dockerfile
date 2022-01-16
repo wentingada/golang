@@ -16,8 +16,8 @@ FROM busybox AS executor
 COPY --from=builder /go/src/httpserver/httpserver /httpserver/httpserver
 
 WORKDIR /httpserver/
-#暴露8080给主机
-EXPOSE 3030
+#暴露8000给主机
+EXPOSE 8000
 
 #告诉Docker启动容器运行的命令
 ENTRYPOINT ["./httpserver"]
