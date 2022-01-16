@@ -8,7 +8,7 @@ ENV GOPROXY=https://goproxy.cn,https://goproxy.io,direct \
 #复制程序到容器
 COPY . .
 #编译
-RUN GOPS=linux go build -installsuffix cgo -o httpserver main.go
+RUN GOOS=linux go build -installsuffix cgo -o httpserver main.go
 
 #在新的镜像里面执行部署
 FROM busybox AS executor
@@ -17,6 +17,7 @@ COPY --from=builder /httpserver/httpserver /httpserver/httpserver
 WORKDIR /httpserver/
 #暴露8000给主机
 EXPOSE 8000
+ENV ENV local
 
 #告诉Docker启动容器运行的命令
 ENTRYPOINT ["./httpserver"]
