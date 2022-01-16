@@ -64,7 +64,7 @@ func main () {
     mux.HandleFunc("/healthz",healthz)
 
     //绑定服务器监听地址
-    if err := http.ListenAndServe("127.0.0.1:8880", mux); err != nil {
+    if err := http.ListenAndServe("127.0.0.1:3030", mux); err != nil {
       log.Fatalf("ListenAndServe Failed: %s\n", err.Error())
     }
 }
