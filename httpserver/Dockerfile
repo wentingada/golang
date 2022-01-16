@@ -3,6 +3,10 @@ FROM golang:latest
 #在容器内部创建一个目录来存储http应用，并设为工作目录
 RUN mkdir -p /go/src/httpserver
 WORKDIR /go/src/httpserver
+ENV GOPROXY=https://goproxy.cn,https://goproxy.io,direct \
+    GO111MODULE=on \
+    CGO_ENABLED=1
+
 #复制程序到容器
 COPY . /go/src/httpserver
 #下载安装第三方依赖库到容器中
