@@ -18,19 +18,81 @@ K8S 部署方式实现：
 - 如何通过证书保证httpServer的通讯安全
 
 ### K8S环境部署
-1.创建命名空间及pod
+1.创建命名空间
 kubectl create -f namespace.yaml
 这个文件如下：
 apiVersion: v1
 kind: Namespace
 metadata:
-	name:development
+	name:dev
   labels：
     name：http-server-development
-2.创建资源pod
-kubectl create -f pod.yaml
-kubectl get pods
+2.部署
+
+kubectl create -f deployment.yaml
+kubectl get deployent -ns dev
 这个文件如下：
+apiVersion: v1
+kind: Deployment
+metadata:  
+  labels:    
+    app: httpserver  
+  name: httpserver
+  namespace:dev
+spec:
+  template:    
+    metadata:      
+      creationTimestamp: null      
+      labels:        
+        app: httpserver
+  spec：
+    containers:
+    - env:            
+      - name: httpport              
+        valueFrom:               
+	  configMapKeyRef:                  
+	    key: httpport                  
+	    name: myenv
+      image:wentingada/httpserver:0.0
+      imagePullPolicay:IfNotPresent
+      readinessProbe:
+	httpGet:
+	  path: /healthz
+	  port: 8000
+	initialDelaySeconds: 30
+	periodSeconds: 5
+	successThreshold: 2
+	exec:
+          command:
+            - cat
+            - /tmp/healthy
+     
+      livenessProbe:
+        exec:
+          command:
+            - cat
+            - /tmp/healthy
+        initialDelaySeconds: 10
+        periodSeconds: 5
+	successThreshold: 1            
+	timeoutSeconds: 1
+		lifecycle:
+			postStart:
+				exec:
+					command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+			preStop:
+				exec:
+					command: [ "/bin/sh","-c","nginx -s quit; while killall -0 nginx; do sleep 1; done" ]
+		
+	spec:
+		terminationGracePeriodSeconds: 60
+	resource:
+		limits:
+			cpu:"500m"
+			memory:"128Mi"
+		request:
+			cpu:"250m"
+			memory:"64Mi"
 
 2.部署主节点
 首先复制一份 deploy-master.yaml 到本地。
@@ -40,9 +102,10 @@ kubectl get pods
 apiVersion: v1
 kind: Service
 metadata:
-  name: http-server
+  name: web-server
   labels:
-    name: http-server
+    name: web-server
+  namespace:dev
 spec:
   type: LoadBalancer
   ports:
@@ -56,10 +119,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: web-server
+  labels:    
+    app: web-server
+  namespace:dev
 spec:
   selector:
     matchLabels:
       app: web-server
+  progressDeadlineSeconds: 600  
+    replicas: 2  
+    revisionHistoryLimit: 10       
+    strategy:    
+      rollingUpdate:      m
+        axSurge: 25%      
+	maxUnavailable: 25%    
+      type: RollingUpdate
   template:
     metadata:
       labels:
@@ -78,19 +152,32 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
-            tcpSocket:
-              port: 8888
-            initialDelaySeconds: 15
-            periodSeconds: 20
+            failureThreshold: 3            
+	    httpGet:              
+	      path: /healthz              
+	      port: 8080              
+	      scheme: HTTP            
+	    initialDelaySeconds: 5            
+	    periodSeconds: 10            
+	    successThreshold: 1            
+	    timeoutSeconds: 1
           volumeMounts:
             - name: config-volume
-              mountPath: /gva/config.yaml
+              mountPath: /mc/config.yaml
               subPath: config.yaml
+	  resources:            
+	    limits:              
+	      cpu: 200m              
+	      memory: 100Mi            
+	    requests:              
+	      cpu: 20m              
+	      memory: 20Mi
       restartPolicy: Always
       volumes:
         - name: config-volume
           configMap:
             name: configfile
+      terminationGracePeriodSeconds: 30
 
 
 ---
