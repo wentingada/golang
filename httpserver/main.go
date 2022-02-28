@@ -7,7 +7,6 @@ import
     "os"
     "strings"
 )
-//参考https://www.topgoer.com/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/http%E7%BC%96%E7%A8%8B.html
 
 func myHandle(w http.ResponseWriter, r *http.Request) {
   //w: 写给客户端的数据内容
@@ -64,7 +63,7 @@ func main () {
     mux.HandleFunc("/healthz",healthz)
 
     //绑定服务器监听地址
-    if err := http.ListenAndServe("127.0.0.1:8000", mux); err != nil {
+    if err := http.ListenAndServe("127.0.0.1:8080", mux); err != nil {
       log.Fatalf("ListenAndServe Failed: %s\n", err.Error())
     }
 }
