@@ -166,4 +166,4 @@ helm install \
 kubectl get pods -n dev
 kubectl get svc -n dev
 
-这时打开浏览器，在地址栏输入 http://<master_node_ip>:8080 就可以看到 httpserver 的界面。
+这时打开浏览器，在地址栏输入 http://<master_node_ip>[testhttp.com]:8080 就可以看到 httpserver 的界面。
