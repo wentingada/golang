@@ -22,14 +22,8 @@ spec:
         app: httpserver
   spec：
     containers:
-    - env:            
-      - name: httpport              
-        valueFrom:               
-	  configMapKeyRef:                  
-	    key: httpport                  
-	    name: myenv
-      image:wentingada/httpserver:0.0
-      imagePullPolicay:IfNotPresent
+    - image: wentingada/httpserver:0.0
+      imagePullPolicay: IfNotPresent
       readinessProbe:
         tcpSocket:
         port: 8080
@@ -62,7 +56,7 @@ spec:
 	  request:
 	    cpu:"250m"
 	    memory:"64Mi"
-  volumeMounts:
+          volumeMounts:
           - name: config
             mountPath: /usr/local/
             subPath:config.yaml
