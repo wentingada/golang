@@ -161,10 +161,9 @@ helm install \
     --version v1.7.1 \
 
 2.2.3 验证部署
-执行以下命令来查看 Pod 部署情况。
+执行以下命令来查看Pod和服务的部署情况。
 
 kubectl get pods -n dev
-输出结果如下。
-
+kubectl get svc -n dev
 
 这时打开浏览器，在地址栏输入 http://<master_node_ip>:8080 就可以看到 httpserver 的界面。
