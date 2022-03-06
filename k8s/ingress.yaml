@@ -5,7 +5,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: www.abc.com
+    - host: www.testdns.com
       http:
         paths:
           - backend:
