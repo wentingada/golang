@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+	name:dev
+  labels：
+    name：http-server-development
+
+
+---
+apiVersion: v1
+kind: Deployment
+metadata:  
+  labels:    
+    app: httpserver  
+  name: httpserver
+  namespace:dev
+spec:
+  template:    
+    metadata:      
+      creationTimestamp: null      
+      labels:        
+        app: httpserver
+  spec：
+    containers:
+    - env:            
+      - name: httpport              
+        valueFrom:               
+	  configMapKeyRef:                  
+	    key: httpport                  
+	    name: myenv
+      image:wentingada/httpserver:0.0
+      imagePullPolicay:IfNotPresent
+      readinessProbe:
+        tcpSocket:
+        port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 10
+     
+      livenessProbe:
+        failureThreshold: 3            
+	  httpGet:              
+	      path: /healthz              
+	      port: 8080              
+	      scheme: HTTP            
+	  initialDelaySeconds: 5            
+	  periodSeconds: 10            
+	  successThreshold: 1            
+	  timeoutSeconds: 1
+      lifecycle:
+	  postStart:
+	    exec:
+	      command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+	  preStop:
+	    exec:
+	      command: [ "/bin/sh","-c","httpserver -s quit; while killall -0 httpserver; do sleep 1; done" ]
+	spec:
+	  terminationGracePeriodSeconds: 60
+	resource:
+	  limits:
+	    cpu:"500m"
+	    memory:"128Mi"
+	  request:
+	    cpu:"250m"
+	    memory:"64Mi"
+  volumeMounts:
+          - name: config
+            mountPath: /usr/local/
+            subPath:config.yaml
+	volumes:
+        - name: config
+          configMap:
+            name: configfile
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configfile
+  namespace: dev
+data:
+  config.yaml: |
+    log:
+      prefix: '[HTTP-SERVER]'
+      log-file: true
+      stdout: 'DEBUG'
+      file: 'DEBUG'
+  

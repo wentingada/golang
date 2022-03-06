@@ -24,7 +24,7 @@ K8S 部署方式实现：
 - 如何保证整个应用的高可用
 - 如何通过证书保证httpServer的通讯安全
 
-### K8S环境部署
+### K8S环境部署,具体脚本见目录k8s
 1.创建命名空间
 kubectl create -f namespace.yaml
 这个文件如下：
@@ -120,23 +120,21 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: httpserver
+  name: http-service
   labels:
-    name: httpserver
-  namespace:dev
+    app: httpserver
 spec:
-  type: LoadBalancer
-  ports:
-  - name: http
-    port: 8080
-    targetPort: 8080
   selector:
     app: httpserver
-
-
-    
+  ports:
+  - name: httpserver-port
+    protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: ClusterIP
+  
 然后执行下列命令使配置生效。
-
+kubectl create -f service.yaml
 
 2.2.3 验证部署
 执行以下命令来查看 Pod 部署情况。
