@@ -1,0 +1,6 @@
+作业十：
+1.为httpserver添加0-2秒的随机延时
+2.为httpserver项目添加延时metric
+3.将httpserver部署至测试集群，并完成Prometheus配置
+4.从Prometheus界面查询延时指标数据
+5.创建一个Grafana Dashboard展示延时分配情况

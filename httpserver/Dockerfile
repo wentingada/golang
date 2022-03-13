@@ -15,8 +15,8 @@ FROM busybox AS executor
 COPY --from=builder /BUILD/httpserver /
 
 WORKDIR /
-#暴露8000给主机
-EXPOSE 8080
+#暴露80给主机
+EXPOSE 80
 
 #告诉Docker启动容器运行的命令
 ENTRYPOINT ["./httpserver"]
