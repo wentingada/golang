@@ -19,12 +19,14 @@ import
 func main () {
   fmt.Println("Hello wentingada!   %v\n\n ",time.Now())
   fmt.Println("Strtting up http server ...")
+ //在程序开始，在注册表中注册延时metric指标。  
   metrics.Register()
 
   //注册回调函数，该函数在客户端访问服务器时，自动被调用
   mux := http.NewServeMux()
   mux.HandleFunc("/",myHandle)
   mux.HandleFunc("/healthz",healthz)
+  //通过http暴露该指标
   mux.Handle("/metrics", promhttp.Handler())
 
   //引入srv对象，使得代码优雅关闭
