@@ -12,12 +12,15 @@ import
     "io"
 
     "github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/cncamp/golang/httpserver/metrics"
+	"context"
+	"math/rand"
 
     
 )
 
 func main () {
-  fmt.Println("Hello wentingada!   %v\n\n ",time.Now())
+  fmt.Println("Hello wentingada! \n\n",time.Now())
   fmt.Println("Strtting up http server ...")
  //在程序开始，在注册表中注册延时metric指标。  
   metrics.Register()
@@ -33,7 +36,7 @@ func main () {
   //close不会尝试关闭或等待websockects连接，不够优雅
   //优雅关闭使用shutdown
   srv := http.Server{
-          Addr: ":80",
+          Addr: ":8081",
           Handler: mux,
           ReadTimeout:    10 * time.Second,
           WriteTimeout:   10 * time.Second,
@@ -42,7 +45,7 @@ func main () {
 
   //启动一个gorountine，绑定服务器监听地址
   go func() {
-    log.Printf("Server start at 127.0.0.0:80")
+    log.Printf("Server start at 127.0.0.0:8081")
     if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
       log.Fatalf("ListenAndServe Failed: %s\n", err.Error())
     }
@@ -58,7 +61,7 @@ func main () {
       cancel()
     }()
 
-    f err := srv.Shutdown(ctx); err != nil {
+    if err := srv.Shutdown(ctx); err != nil {
       log.Fatalf("Server Shutdown Failed:%+v", err)
     }
     //log.Println(s.Shutdown(ctx))
@@ -118,7 +121,7 @@ func healthz(w http.ResponseWriter, r *http.Request) {
   //w: 写给客户端的数据内容
   //w.Write([]byte("Now health checking..."))
   //w.WriteHeader(200)
-  io.WriteString(w,"Health checking OK\n"
+  io.WriteString(w,"Health checking OK\n")
 
 }
 func getClientIP(r *http.Request) string{
