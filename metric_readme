@@ -1,6 +1,14 @@
 作业十：
 1.为httpserver添加0-2秒的随机延时
+在代码的主回调函数myHandle里增加：
+ timer := metrics.NewTimer()
+ defer timer.ObserveTotal()
+ delay := randInt(10,2000)
+ time.Sleep(time.Millisecond*time.Duration(delay))
 2.为httpserver项目添加延时metric
+增加meric.go :
+在程序开始，在注册表中注册延时metric指标，我们调用prometheus.MustRegister的函数注册这个指标，不成功会返回一个panic。
+通过http暴露该指标： mux.Handle("/metrics", promhttp.Handler())
 3.将httpserver部署至测试集群，并完成Prometheus配置
 4.从Prometheus界面查询延时指标数据
 5.创建一个Grafana Dashboard展示延时分配情况
