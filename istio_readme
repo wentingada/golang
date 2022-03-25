@@ -1,7 +1,24 @@
 把httpserver 服务以 Istio Ingress Gateway 的形式发布出来。以下是你需要考虑的几点：
-如何实现安全保证；
-七层路由规则；
-考虑 open tracing 的接入。
+    1.如何实现安全保证；
+    Istio Security 尝试提供全面的安全解决方, Istio 安全功能提供强大的身份，强大的策略，透明的 TLS 加密，认证，授权和审计（AAA）工具来保护你的服务和数据。
+    认证：管控网格服务间的双向 TLS 和终端用户的身份认证。
+    证书管理:管理 Istio 的证书。
+    授权：展示如何控制到 Istio 服务的访问。
+    以授权为例：可以部署以下设置进行各种授权：
+    HTTP 流量授权：设置 HTTP 流量访问控制。
+    TCP 流量：设置 TCP 流量的访问控制。
+    基于 JWT 授权：在 Istio 中通过 JWT 实现访问控制。
+    明确拒绝：设置访问控制以明确地拒绝流量。
+    信任域迁移：阐在不更改授权策略的前提下从一个信任域迁移到另一个。
+
+    2.七层路由规则；
+    Istio 网关让您充分利用流量路由的强大能力和灵活性。您可以这么做的原因是 Istio 的网关资源可以配置 4-6 层的负载均衡属性，如对外暴露的端口、TLS 设置等。
+作为替代应用层流量路由（L7）到相同的 API 资源，您绑定了一个常规的 Istio 虚拟服务到网关。这让您可以像管理网格中其他数据平面的流量一样去管理网关流量。
+Istio 提供了一些预先配置好的网关代理部署（istio-ingressgateway 和 istio-egressgateway，我们可以为httpserver服务的 入口流量配置网关，使用ingressgateway。
+这个网关配置让 HTTPS 流量从 host（xxx.com即对外暴露的服务url） 通过 443 端口流入网格，但没有为请求指定任何路由规则。为网关指定路由，须把网关绑定到虚拟服务上。
+使用虚拟服务的 gateways 字段进行设置，就可以为出口流量配置带有路由规则的虚拟服务。
+
+    3.考虑 open tracing 的接入。
 
 前提条件：
 1.使用Helm安装Istio（refer：https://istio.io/latest/docs/setup/install/helm/）
@@ -24,28 +41,11 @@
 本readme描述通过 Istio Ingress Gateway 配置流量，以便在微服务中通过使用 Istio 控制流量。
 Ingress Gateway 描述运行在网格边界的负载均衡器，负责接收传入的 HTTP/TCP 连接。其中配置了对外暴露的端口、协议等。但是，与Kubernetes Ingress 资源不同，Ingress Gateway 
 不包含任何流量路由配置。Ingress 流量的路由使用 Istio 路由规则来配置，和内部服务请求完全一样。
-1.创建 Istio Gateway：
-$ kubectl apply -f - <<EOF
-apiVersion: networking.istio.io/v1alpha3
-kind: Gateway
-metadata:
-  name: httpserver-gateway
-spec:
-  selector:
-    istio: ingressgateway # use Istio default gateway implementation
-  servers:
-  - port:
-      number: 80
-      name: http
-      protocol: HTTP
-    hosts:
-    - "http.example.com"
-EOF
-2.为通过 Gateway 的入口流量配置路由：
-为 Istio Ingress Gateway 的主机名创建一个环境变量。
+1.为 Istio Ingress Gateway 的主机名创建一个环境变量。
 $ export NAMESPACE=wwt
 $ export MY_INGRESS_GATEWAY_HOST=istio.$NAMESPACE.httpserver.com
-配置 Istio Ingress Gateway：
+
+2.配置 Istio Ingress Gateway：
 $ kubectl apply -f - <<EOF
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
@@ -75,6 +75,8 @@ spec:
   - match:
     - uri:
         prefix: /healthz
+    - uri:
+        prefix: /static
     route:
     - destination:
         port:
